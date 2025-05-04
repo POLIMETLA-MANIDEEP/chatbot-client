@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { UserData } from "../context/UserContext";
 import { useNavigate } from "react-router-dom";
 import { LoadingSpinner } from "../components/Loading";
+import { ChatData } from "../context/ChatContext";
 
 // ShadCN imports
 import {
@@ -15,7 +16,10 @@ import {
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { ChatData } from "../context/ChatContext";
+import { Alert, AlertDescription } from "../components/ui/alert";
+
+// Icons
+import { KeyRound, ArrowLeft, ShieldCheck, RefreshCw } from "lucide-react";
 
 const Verify = () => {
   const [otp, setOtp] = useState("");
@@ -35,66 +39,100 @@ const Verify = () => {
   return (
     <div className="flex flex-col md:flex-row h-screen w-full">
       {/* Left Side: OTP Verification Card */}
-      <div className="flex justify-center items-center w-full md:w-1/2 bg-white p-4">
-        <Card className="w-full max-w-sm p-6 shadow-lg border border-gray-200">
-          <CardHeader>
-            <CardTitle className="text-2xl font-semibold text-gray-800">
-              Verify OTP
+      <div className="flex justify-center items-center w-full md:w-1/2 bg-gradient-to-br from-slate-50 to-indigo-50 p-6">
+        <Card className="w-full max-w-md p-6 shadow-lg border-slate-200 bg-white">
+          <CardHeader className="space-y-3 pb-6">
+            <div className="flex justify-center mb-4">
+              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
+                <ShieldCheck className="h-8 w-8 text-white" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Verify Your Account
             </CardTitle>
-            <CardDescription className="text-sm text-gray-500">
-              Enter the OTP sent to your email to verify your identity.
+            <CardDescription className="text-center text-slate-500">
+              We've sent a one-time password to your email address.
             </CardDescription>
-            <CardDescription className="text-sm text-red-500 font-semibold">
-              Refresh the Page Once after Logged In..!
-            </CardDescription>
+            
+            <Alert className="bg-indigo-50 border-indigo-100 text-indigo-800">
+              <RefreshCw className="h-4 w-4 text-indigo-500 mr-2" />
+              <AlertDescription className="text-sm font-medium">
+                Please refresh the page after successful verification.
+              </AlertDescription>
+            </Alert>
           </CardHeader>
           <CardContent>
-            <form onSubmit={submitHandler}>
+            <form onSubmit={submitHandler} className="space-y-6">
               <div className="grid w-full gap-4">
-                <div className="flex flex-col space-y-1.5">
-                  <Label htmlFor="otp" className="text-gray-700">OTP</Label>
-                  <Input
-                    id="otp"
-                    type="text"
-                    placeholder="Enter 6-digit OTP"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    required
-                    maxLength="6"
-                    className="focus:ring-2 focus:ring-blue-500"
-                  />
+                <div className="flex flex-col space-y-2">
+                  <Label htmlFor="otp" className="text-slate-700">One-Time Password</Label>
+                  <div className="relative">
+                    <KeyRound className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                    <Input
+                      id="otp"
+                      type="text"
+                      placeholder="Enter 6-digit OTP"
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value)}
+                      required
+                      maxLength="6"
+                      className="pl-10 border-slate-200 focus-visible:ring-indigo-500 focus-visible:border-indigo-500 text-lg tracking-wider text-center font-medium"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500 text-center mt-1">
+                    The OTP will expire in 10 minutes
+                  </p>
                 </div>
               </div>
             </form>
           </CardContent>
-          <CardFooter className="flex flex-col gap-2">
+          <CardFooter className="flex flex-col gap-3 pt-2">
             <Button
-              variant="ghost"
-              className="w-full bg-blue-600 text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 disabled:bg-blue-300 disabled:text-gray-100 disabled:cursor-not-allowed"
-              disabled={btnLoading}
+              variant="default"
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium py-2 shadow-md disabled:opacity-70"
+              disabled={btnLoading || otp.length !== 6}
               onClick={submitHandler}
             >
-              {btnLoading ? <LoadingSpinner /> : "Verify"}
+              {btnLoading ? (
+                <LoadingSpinner />
+              ) : (
+                <>
+                  <ShieldCheck className="mr-2 h-4 w-4" /> Verify OTP
+                </>
+              )}
             </Button>
 
             {/* Back Button */}
             <Button
-              variant="destructive"
-              className="w-full bg-gray-300 text-black hover:bg-gray-400 focus:ring-2 focus:ring-gray-500"
+              variant="outline"
+              className="w-full border-slate-300 text-slate-700 hover:bg-slate-100 hover:text-slate-800"
               onClick={goBack}
             >
-              Back to Login
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Login
             </Button>
           </CardFooter>
         </Card>
       </div>
 
-      <div className="hidden md:flex w-1/2 h-full">
+      {/* Right side: Image with Overlay (Only visible on md+ screens) */}
+      <div className="hidden md:block w-1/2 h-full relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/70 to-purple-900/70 z-10"></div>
         <img
           src="image2.jpeg"
           alt="OTP Illustration"
           className="w-full h-full object-cover"
         />
+        <div className="absolute inset-0 flex flex-col justify-center items-center z-20 p-12">
+          <h2 className="text-4xl font-bold text-white mb-6">Almost There!</h2>
+          <p className="text-lg text-indigo-100 text-center max-w-lg">
+            We're keeping your account secure with two-factor authentication. Enter the code we sent to your email to access your AI assistant.
+          </p>
+          <div className="flex gap-3 mt-10">
+            <div className="h-3 w-3 rounded-full bg-white opacity-70"></div>
+            <div className="h-3 w-3 rounded-full bg-white opacity-70"></div>
+            <div className="h-3 w-3 rounded-full bg-white"></div>
+          </div>
+        </div>
       </div>
     </div>
   );
