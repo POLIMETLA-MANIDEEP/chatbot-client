@@ -5,7 +5,6 @@ import { LoadingBig, LoadingSmall } from "../components/Loading";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Card } from "../components/ui/card";
-import { Separator } from "../components/ui/separator";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { Sheet, SheetContent } from "../components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
@@ -29,6 +28,9 @@ const Home = () => {
     chats,
   } = ChatData();
 
+  const scrollAreaRef = useRef(null);
+  const messagesEndRef = useRef(null);
+
   const submitHandler = (e) => {
     e.preventDefault();
     if (!prompt.trim()) return;
@@ -42,13 +44,12 @@ const Home = () => {
     }
   };
 
-  const messageContainerRef = useRef();
-
+  // Scroll to bottom whenever messages change
   useEffect(() => {
-    if (messageContainerRef.current) {
-      messageContainerRef.current.scrollTop = messageContainerRef.current.scrollHeight;
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, newRequestLoading]);
 
   const toggleSheet = (state) => {
     setIsSheetOpen(state);
@@ -114,7 +115,12 @@ const Home = () => {
             </div>
           ) : (
             <Card className="h-full flex flex-col bg-white border-slate-200 shadow-md overflow-hidden">
-              <ScrollArea className="flex-1 p-4 md:p-6" ref={messageContainerRef}>
+              <ScrollArea 
+                className="flex-1 p-4 md:p-6" 
+                ref={scrollAreaRef}
+                // Ensure the ScrollArea takes up all available space
+                style={{ height: "100%" }}
+              >
                 {messages?.length > 0 ? (
                   <div className="space-y-8">
                     {messages.map((message, i) => (
@@ -149,6 +155,13 @@ const Home = () => {
                         </div>
                       </div>
                     ))}
+                    {/* This is an invisible element that helps us scroll to the bottom */}
+                    <div ref={messagesEndRef} />
+                    {newRequestLoading && (
+                      <div className="py-4 flex justify-center">
+                        <LoadingSmall />
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-center p-4">
@@ -159,11 +172,6 @@ const Home = () => {
                     <p className="text-slate-500 max-w-md">
                       Start a conversation with the AI assistant. Ask questions or request information on any topic.
                     </p>
-                  </div>
-                )}
-                {newRequestLoading && (
-                  <div className="py-4 flex justify-center">
-                    <LoadingSmall />
                   </div>
                 )}
               </ScrollArea>
@@ -204,7 +212,6 @@ const Home = () => {
         </main>
       </div>
 
-      {/* Alert Dialog for confirmation actions */}
       <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
         <AlertDialogContent className="bg-white border border-slate-200">
           <AlertDialogHeader>
